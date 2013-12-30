@@ -1,0 +1,123 @@
+<project name="solr-hash-table-field" basedir="." default="main">
+
+    <property name="version" value="0.1"/>
+
+    <property environment="env"/>
+
+    <condition property="solr.proj.dir" value="${env.SOLR_PROJ}" else="../lucene-solr">
+        <isset property="env.SOLR_PROJ"/>
+    </condition>
+    <echo message="Used solr project directory: ${solr.proj.dir}"/>
+    <echo message="You can reset solr project directory with SOLR_PROJ environment variable"/>
+    
+    <property name="lucene.lib.dir"
+              value="${solr.proj.dir}/solr/build/lucene-libs"/>
+    <property name="solrj.lib.dir"
+              value="${solr.proj.dir}/solr/dist/solrj-lib"/>
+    <property name="solr.core.lib.dir"
+              value="${solr.proj.dir}/solr/core/lib"/>
+    <property name="solr.dist.lib.dir"
+              value="${solr.proj.dir}/solr/dist"/>
+
+    <property name="src.dir" value="src/java"/>
+
+    <property name="build.dir" value="build"/>
+    <property name="classes.dir" value="${build.dir}/classes"/>
+    <property name="jar.dir" value="${build.dir}/jar"/>
+    <property name="jar.file" value="${jar.dir}/${ant.project.name}-${version}.jar"/>
+    <property name="dist.dir" value="dist"/>
+
+    <property name="test.src.dir" value="src/test"/>
+    <property name="test.classes.dir" value="${build.dir}/test/classes"/>
+    <property name="test.jar.dir" value="${build.dir}/test/jar"/>
+    <property name="test.jar.file" value="${test.jar.dir}/${ant.project.name}-test-${version}.jar"/>
+
+    <property name="out.dir" value="out"/>
+    <property name="reports.out.dir" value="${out.dir}/reports"/>
+    <property name="junit.out.dir" value="${reports.out.dir}/junit"/>
+
+<!--
+    <property name="lib.dir" value="lib"/>
+-->
+
+    <property name="solr.home" value="solr"/>
+    
+
+    <path id="sourcepath">
+        <fileset dir="${src.dir}">
+            <include name="**/*.java"/>
+        </fileset>
+    </path>
+    
+    <path id="classpath">
+        <fileset dir="${lucene.lib.dir}" includes="*.jar"/>
+        <fileset dir="${solrj.lib.dir}" includes="*.jar"/>
+        <fileset dir="${solr.core.lib.dir}" includes="*.jar"/>
+        <fileset dir="${solr.dist.lib.dir}" includes="*.jar"/>
+        
+<!--
+        <fileset dir="${lib.dir}" includes="*.jar"/>
+-->
+    </path>
+
+    <path id="test.classpath">
+        <path refid="classpath"/>
+        <fileset dir="${jar.dir}" includes="*.jar"/>
+    </path>
+
+
+    <target name="clean">
+        <delete dir="${out.dir}"/>
+        <delete dir="${build.dir}"/>
+        <delete dir="${jar.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+
+    <target name="compile">
+        <mkdir dir="${classes.dir}"/>
+        <property name="sourcepath" refid="sourcepath"/>
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="true">
+            <compilerarg value="-Xlint:unchecked" />
+            <include name="**/*.java"/>
+        </javac>
+    </target>
+
+    <target name="jar" depends="compile">
+        <mkdir dir="${jar.dir}"/>
+        <jar destfile="${jar.file}" basedir="${classes.dir}"/>
+    </target>
+
+    <target name="dist" depends="jar">
+        <copy file="${jar.file}" todir="${dist.dir}"/>
+    </target>
+
+    <target name="compile-test" depends="jar">
+        <mkdir dir="${test.classes.dir}"/>
+        <javac srcdir="${test.src.dir}" destdir="${test.classes.dir}" classpathref="test.classpath" debug="true"/>
+    </target>
+
+    <target name="jar-test" depends="compile-test">
+        <mkdir dir="${test.jar.dir}"/>
+        <jar destfile="${test.jar.file}" basedir="${test.classes.dir}"/>
+    </target>
+
+    <target name="test" depends="compile-test">
+        <junit haltonfailure="no" haltonerror="no">
+            <classpath>
+                <pathelement path="${test.classes.dir}"/>
+                <path refid="test.classpath"/>
+            </classpath>
+            <batchtest fork="no" todir="${junit.out.dir}">
+                <fileset dir="${test.classes.dir}">
+                    <include name="**/*.class"/>
+                </fileset>
+            </batchtest>
+            <formatter type="brief" usefile="false"/>
+        </junit>
+    </target>
+
+    <target name="clean-build" depends="clean,jar"/>
+
+    <target name="main" depends="clean,test"/>
+
+</project>
