@@ -69,8 +69,7 @@ public class HashGetFunction extends ValueSource {
                     return defaultValue;
                 }
 
-                HashTable table = new HashTable(target.bytes, target.offset, target.length);
-                return table.get(key, defaultValue);
+                return HashTable.hget(target.bytes, target.offset, target.length, key, defaultValue);
             }
         };
     }

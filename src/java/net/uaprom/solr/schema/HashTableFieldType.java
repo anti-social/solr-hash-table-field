@@ -62,8 +62,8 @@ public class HashTableFieldType extends FieldType {
 
         if (field.hasDocValues()) {
             KeysValues kv = parseMap(externalValue);
-            HashTable table = new HashTable(kv.keys, kv.values);
-            indexFields.add(new BinaryDocValuesField(field.getName(), new BytesRef(table.bytes)));
+            BytesRef ref = new BytesRef(HashTable.hcreate(kv.keys, kv.values));
+            indexFields.add(new BinaryDocValuesField(field.getName(), ref));
         }
 
         if (field.stored()) {

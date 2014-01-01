@@ -61,8 +61,7 @@ public class HashLenFunction extends ValueSource {
                     return 0;
                 }
 
-                HashTable table = new HashTable(target.bytes, target.offset, target.length);
-                return table.len();
+                return HashTable.hlen(target.bytes, target.offset, target.length);
             }
         };
     }

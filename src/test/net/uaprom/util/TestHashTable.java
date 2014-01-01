@@ -27,6 +27,7 @@ public class TestHashTable {
         }
         assertEquals(keys.length, t.len());
         assertEquals(-1.23456789f, t.get(123456789, -1.23456789f), DELTA);
+        assertEquals(0.0f, t.get(123456789), DELTA);
         assertFalse(t.exists(123456789));
     }
     

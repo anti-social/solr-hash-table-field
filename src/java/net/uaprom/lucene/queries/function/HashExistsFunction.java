@@ -63,8 +63,7 @@ public class HashExistsFunction extends ValueSource {
                     return false;
                 }
 
-                HashTable table = new HashTable(target.bytes, target.offset, target.length);
-                return table.exists(key);
+                return HashTable.hexists(target.bytes, target.offset, target.length, key);
             }
         };
     }

@@ -13,6 +13,39 @@ public class HashTable {
     static int PROBE = 5;
 
     public HashTable(int[] keys, float[] values) {
+        bytes = hcreate(keys, values);
+        offset = 0;
+        length = bytes.length;
+    }
+
+    public HashTable(byte[] bytes) {
+        this(bytes, 0, bytes.length);
+    }
+
+    public HashTable(byte[] bytes, int offset, int length) {
+        this.bytes = bytes;
+        this.offset = offset;
+        this.length = length;
+    }
+
+    public float get(int key) {
+        return hget(bytes, offset, length, key);
+    }
+
+    public float get(int key, float defaultValue) {
+        return hget(bytes, offset, length, key, defaultValue);
+    }
+
+    public boolean exists(int key) {
+        return hexists(bytes, offset, length, key);
+    }
+
+    public int len() {
+        return hlen(bytes, offset, length);
+    }
+
+    // static methods to use without creating HashTable object
+    public static byte[] hcreate(int[] keys, float[] values) {
         ByteBuffer buffer;
         int len = Math.min(keys.length, values.length);
         // special case: saves 4 bytes for hash table with one pair
@@ -51,28 +84,16 @@ public class HashTable {
             }
         }
 
-        this.bytes = buffer.array();
-        this.offset = 0;
-        this.length = buffer.capacity();
+        return buffer.array();
     }
 
-    public HashTable(byte[] bytes) {
-        this(bytes, 0, bytes.length);
+    public static float hget(byte[] bytes, int offset, int length, int key) {
+        return hget(bytes, offset, length, key, 0.0f);
     }
 
-    public HashTable(byte[] bytes, int offset, int length) {
-        this.bytes = bytes;
-        this.offset = offset;
-        this.length = length;
-    }
-
-    public float get(int key) {
-        return get(key, 0.0f);
-    }
-
-    public float get(int key, float defaultValue) {
-        ByteBuffer buffer = ByteBuffer.wrap(this.bytes, this.offset, this.length);
-        if (this.length == 8) {
+    public static float hget(byte[] bytes, int offset, int length, int key, float defaultValue) {
+        ByteBuffer buffer = ByteBuffer.wrap(bytes, offset, length);
+        if (length == 8) {
             if (buffer.getInt() == key) {
                 return buffer.getFloat();
             } else {
@@ -100,23 +121,24 @@ public class HashTable {
         return buffer.getFloat();
     }
 
-    public boolean exists(int key) {
-        float val = get(key, Float.NaN);
+    public static int hlen(byte[] bytes, int offset, int length) {
+        ByteBuffer buffer = ByteBuffer.wrap(bytes, offset, length);
+        if (length == 8) {
+            return 1;
+        }
+        return buffer.getShort();
+    }
+
+    public static boolean hexists(byte[] bytes, int offset, int length, int key) {
+        float val = hget(bytes, offset, length, key, Float.NaN);
         if (Float.isNaN(val)) {
             return false;
         }
         return true;
     }
 
-    public int len() {
-        ByteBuffer buffer = ByteBuffer.wrap(this.bytes, this.offset, this.length);
-        if (this.length == 8) {
-            return 1;
-        }
-        return buffer.getShort();
-    }
-
-    private int getTableSize(int count) {
+    //private methods
+    private static int getTableSize(int count) {
         int size;
         int m = count;
         int i = 0;
