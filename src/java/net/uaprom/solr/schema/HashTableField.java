@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.ArrayList;
 
 
-public class HashTableFieldType extends FieldType {
-    private static Logger log = LoggerFactory.getLogger(HashTableFieldType.class);
+public class HashTableField extends FieldType {
+    private static Logger log = LoggerFactory.getLogger(HashTableField.class);
 
     @Override
     public void write(TextResponseWriter writer, String name, IndexableField f) throws IOException {
