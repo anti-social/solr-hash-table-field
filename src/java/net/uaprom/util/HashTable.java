@@ -13,32 +13,42 @@ public class HashTable {
     static int PROBE = 5;
 
     public HashTable(int[] keys, float[] values) {
-        int length = Math.min(keys.length, values.length);
-        int size = getTableSize(length);
-        int mask = size - 1;
-        // 2 bytes - mask
-        // 2 bytes - length
-        // size * 4 - keys
-        // size * 4 - values
-        ByteBuffer buffer = ByteBuffer.allocate(2 + 2 + size * 2 * 4);
-        buffer.putShort((short) length);
-        buffer.putShort((short) mask);
-        for (int i = 0; i < size; i++) {
-            buffer.putInt(DUMMY);
-            buffer.putFloat(0.0f);
-        }
-
-        int[] keyTable = new int[size];
-        Arrays.fill(keyTable, DUMMY);
-        for (int i = 0; i < length; i++) {
-            int h = keys[i] & mask;
-            while (keyTable[h] != DUMMY) {
-                h = (h + PROBE) & mask;
+        ByteBuffer buffer;
+        int len = Math.min(keys.length, values.length);
+        // special case: saves 4 bytes for hash table with one pair
+        if (len == 1) {
+            // 4 bytes - key
+            // 4 bytes - value
+            buffer = ByteBuffer.allocate(8);
+            buffer.putInt(keys[0]);
+            buffer.putFloat(values[0]);
+        } else {
+            int size = getTableSize(len);
+            int mask = size - 1;
+            // 2 bytes - mask
+            // 2 bytes - len
+            // size * 4 - keys
+            // size * 4 - values
+            buffer = ByteBuffer.allocate(2 + 2 + size * 2 * 4);
+            buffer.putShort((short) len);
+            buffer.putShort((short) mask);
+            for (int i = 0; i < size; i++) {
+                buffer.putInt(DUMMY);
+                buffer.putFloat(0.0f);
             }
-            buffer.position(4 + h * 8);
-            buffer.putInt(keys[i]);
-            buffer.putFloat(values[i]);
-            keyTable[h] = keys[i];
+
+            int[] keyTable = new int[size];
+            Arrays.fill(keyTable, DUMMY);
+            for (int i = 0; i < len; i++) {
+                int h = keys[i] & mask;
+                while (keyTable[h] != DUMMY) {
+                    h = (h + PROBE) & mask;
+                }
+                buffer.position(4 + h * 8);
+                buffer.putInt(keys[i]);
+                buffer.putFloat(values[i]);
+                keyTable[h] = keys[i];
+            }
         }
 
         this.bytes = buffer.array();
@@ -62,7 +72,14 @@ public class HashTable {
 
     public float get(int key, float defaultValue) {
         ByteBuffer buffer = ByteBuffer.wrap(this.bytes, this.offset, this.length);
-        int length = buffer.getShort();
+        if (this.length == 8) {
+            if (buffer.getInt() == key) {
+                return buffer.getFloat();
+            } else {
+                return defaultValue;
+            }
+        }
+        int len = buffer.getShort();
         int mask = buffer.getShort();
 
         int i, h, j, k;
@@ -72,7 +89,7 @@ public class HashTable {
             j = h;
             buffer.position(4 + j * 8);
             k = buffer.getInt();
-            if (k == DUMMY || i == length) {
+            if (k == DUMMY || i == len) {
                 return defaultValue;
             }
             h = (j + PROBE) & mask;
@@ -92,7 +109,10 @@ public class HashTable {
     }
 
     public int len() {
-        ByteBuffer buffer = ByteBuffer.wrap(bytes, offset, length);
+        ByteBuffer buffer = ByteBuffer.wrap(this.bytes, this.offset, this.length);
+        if (this.length == 8) {
+            return 1;
+        }
         return buffer.getShort();
     }
 
