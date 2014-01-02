@@ -53,11 +53,11 @@ public class HashExistsFunction extends ValueSource {
     public FunctionValues getValues(Map context, AtomicReaderContext readerContext) throws IOException {
         final FieldInfo fieldInfo = readerContext.reader().getFieldInfos().fieldInfo(fieldName);
         final BinaryDocValues binaryValues = FieldCache.DEFAULT.getTerms(readerContext.reader(), fieldName, true);
+        final BytesRef target = new BytesRef();
 
         return new BoolDocValues(this) {
             @Override
             public boolean boolVal(int doc) {
-                BytesRef target = new BytesRef();
                 binaryValues.get(doc, target);
                 if (target.length == 0) {
                     return false;
