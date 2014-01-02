@@ -50,7 +50,7 @@ public class HashLenFunction extends ValueSource {
     @Override
     public FunctionValues getValues(Map context, AtomicReaderContext readerContext) throws IOException {
         final FieldInfo fieldInfo = readerContext.reader().getFieldInfos().fieldInfo(fieldName);
-        final BinaryDocValues binaryValues = FieldCache.DEFAULT.getTerms(readerContext.reader(), fieldName, true);
+        final BinaryDocValues binaryValues = FieldCache.DEFAULT.getTerms(readerContext.reader(), fieldName, false);
         final BytesRef target = new BytesRef();
 
         return new IntDocValues(this) {
