@@ -39,4 +39,44 @@ public class TestHashTable {
         testHashTable(new int[] {1, 2, 3, 33}, new float[] {1.1f, 2.2f, 3.3f, 33.3f}, 68);
         testHashTable(new int[] {0, 16, 4, 20, 1}, new float[] {0.1f, 0.16f, 0.4f, 0.20f, 0.1f}, 68);
     }
+
+    @Test
+    public void benchmark() {
+        HashTable t = new HashTable(new int[] {1, 2, 3, 33},
+                                    new float[] {1.1f, 2.2f, 3.3f, 33.3f});
+        byte[] data = t.bytes;
+        final int N = 1000000;
+        float[] res = new float[N];
+        int i;
+
+        // warmup
+        for (i = 0; i < N; i++) {
+            t = new HashTable(data);
+            res[i] = t.get(1);
+            res[i] = HashTable.hget(data, 1);
+        }
+
+        long startTime, endTime;
+
+        System.out.println("Benchmark instance vs static:");
+        
+        // test instance creation
+        startTime = System.currentTimeMillis();
+        for (i = 0; i < N; i++) {
+            t = new HashTable(data);
+            res[i] = t.get(1);
+        }
+        endTime = System.currentTimeMillis();
+        System.out.println("Instance: " + (endTime - startTime) + "ms");
+
+        // test static method
+        startTime = System.currentTimeMillis();
+        for (i = 0; i < N; i++) {
+            res[i] = HashTable.hget(data, 1);
+        }
+        endTime = System.currentTimeMillis();
+        System.out.println("Static: " + (endTime - startTime) + "ms");
+
+        System.out.println("Res[0]: " + res[0]);
+    }
 }
