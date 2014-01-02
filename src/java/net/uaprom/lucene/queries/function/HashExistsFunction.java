@@ -59,10 +59,6 @@ public class HashExistsFunction extends ValueSource {
             @Override
             public boolean boolVal(int doc) {
                 binaryValues.get(doc, target);
-                if (target.length == 0) {
-                    return false;
-                }
-
                 return HashTable.hexists(target.bytes, target.offset, target.length, key);
             }
         };

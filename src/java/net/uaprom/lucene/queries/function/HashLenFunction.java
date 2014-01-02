@@ -57,10 +57,6 @@ public class HashLenFunction extends ValueSource {
             @Override
             public int intVal(int doc) {
                 binaryValues.get(doc, target);
-                if (target.length == 0) {
-                    return 0;
-                }
-
                 return HashTable.hlen(target.bytes, target.offset, target.length);
             }
         };

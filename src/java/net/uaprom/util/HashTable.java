@@ -100,6 +100,10 @@ public class HashTable {
     }
 
     public static float hget(byte[] bytes, int offset, int length, int key, float defaultValue) {
+        if (length == 0) {
+            return defaultValue;
+        }
+
         ByteBuffer buffer = ByteBuffer.wrap(bytes, offset, length);
         if (length == 8) {
             if (buffer.getInt() == key) {
@@ -134,9 +138,13 @@ public class HashTable {
     }
 
     public static int hlen(byte[] bytes, int offset, int length) {
+        if (length == 0) {
+            return 0;
+        }
+
         ByteBuffer buffer = ByteBuffer.wrap(bytes, offset, length);
         if (length == 8) {
-            return 1;
+            return buffer.getInt() != DUMMY ? 1 : 0;
         }
         return buffer.getShort();
     }
@@ -146,6 +154,10 @@ public class HashTable {
     }
 
     public static boolean hexists(byte[] bytes, int offset, int length, int key) {
+        if (length == 0) {
+            return false;
+        }
+
         float val = hget(bytes, offset, length, key, Float.NaN);
         if (Float.isNaN(val)) {
             return false;

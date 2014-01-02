@@ -65,10 +65,6 @@ public class HashGetFunction extends ValueSource {
             @Override
             public float floatVal(int doc) {
                 binaryValues.get(doc, target);
-                if (target.length == 0) {
-                    return defaultValue;
-                }
-
                 return HashTable.hget(target.bytes, target.offset, target.length, key, defaultValue);
             }
         };
