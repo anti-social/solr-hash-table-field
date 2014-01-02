@@ -87,6 +87,14 @@ public class HashTable {
         return buffer.array();
     }
 
+    public static float hget(byte[] bytes, int key) {
+        return hget(bytes, 0, bytes.length, key, 0.0f);
+    }
+
+    public static float hget(byte[] bytes, int key, float defaultValue) {
+        return hget(bytes, 0, bytes.length, key, defaultValue);
+    }
+
     public static float hget(byte[] bytes, int offset, int length, int key) {
         return hget(bytes, offset, length, key, 0.0f);
     }
@@ -121,12 +129,20 @@ public class HashTable {
         return buffer.getFloat();
     }
 
+    public static int hlen(byte[] bytes) {
+        return hlen(bytes, 0, bytes.length);
+    }
+
     public static int hlen(byte[] bytes, int offset, int length) {
         ByteBuffer buffer = ByteBuffer.wrap(bytes, offset, length);
         if (length == 8) {
             return 1;
         }
         return buffer.getShort();
+    }
+
+    public static boolean hexists(byte[] bytes, int key) {
+        return hexists(bytes, 0, bytes.length, key);
     }
 
     public static boolean hexists(byte[] bytes, int offset, int length, int key) {
