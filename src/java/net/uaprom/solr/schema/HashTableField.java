@@ -109,6 +109,8 @@ public class HashTableField extends FieldType {
             if (keys.size() != values.size()) {
                 throw new RuntimeException("Keys and values length mismatch.");
             }
+        } else {
+            throw new RuntimeException("Cannot parse value");
         }
 
         return new KeysValues(ArrayUtils.toPrimitive(keys.toArray(new Integer[0])),
