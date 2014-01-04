@@ -87,8 +87,10 @@ public class HashTableField extends FieldType {
             entries = StringUtils.split(StringUtils.strip(str, "{}"), ',');
             for (String entry : entries) {
                 String[] pair = StringUtils.stripAll(StringUtils.split(StringUtils.strip(entry), ':'));
+                // JSON object properties should be strings
+                // for example, python: json.dumps({1: 1.1}) -> '{"1": 1.1}'
                 keys.add(Integer.parseInt(StringUtils.strip(pair[0], "\"")));
-                values.add(Float.parseFloat(StringUtils.strip(pair[1], "\"")));
+                values.add(Float.parseFloat(pair[1]));
             }
         } else if (StringUtils.startsWith(str, "[")) {
             entries = StringUtils.split(str, ',');
