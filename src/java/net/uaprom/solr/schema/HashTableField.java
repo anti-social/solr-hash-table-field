@@ -42,12 +42,13 @@ public class HashTableField extends FieldType {
 
     @Override
     public final boolean isPolyField() {
-        // really true if the field is indexed and stored
+        // really true if the field is stored
         return true;
     }
 
     @Override
     public void checkSchemaField(final SchemaField field) {
+        // supports doc values
     }
 
     @Override
@@ -60,11 +61,14 @@ public class HashTableField extends FieldType {
         String externalValue = value.toString();
         List<IndexableField> indexFields = new ArrayList<IndexableField>();
 
-        if (field.hasDocValues()) {
-            KeysValues kv = parseMap(externalValue);
-            BytesRef ref = new BytesRef(HashTable.hcreate(kv.keys, kv.values));
-            indexFields.add(new BinaryDocValuesField(field.getName(), ref));
+        KeysValues kv;
+        try {
+            kv = parseValue(externalValue);
+        } catch (RuntimeException e) {
+            throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, e.getMessage());
         }
+        BytesRef ref = new BytesRef(HashTable.hcreate(kv.keys, kv.values));
+        indexFields.add(new BinaryDocValuesField(field.getName(), ref));
 
         if (field.stored()) {
             indexFields.add(new StoredField(field.getName(), externalValue));
@@ -73,23 +77,43 @@ public class HashTableField extends FieldType {
         return indexFields;
     }
 
-    private KeysValues parseMap(String str) {
-        String strippedStr = StringUtils.strip(str, "{}");
-        String[] entries = StringUtils.split(strippedStr, ',');
-
+    public KeysValues parseValue(String str) {
+        String[] entries;
         List<Integer> keys = new ArrayList<Integer>();
         List<Float> values = new ArrayList<Float>();
-        for (String entry : entries) {
-            String[] pair = StringUtils.stripAll(StringUtils.split(StringUtils.strip(entry), ':'));
-            keys.add(Integer.parseInt(StringUtils.strip(pair[0], "\"")));
-            values.add(Float.parseFloat(StringUtils.strip(pair[1], "\"")));
+
+        str = StringUtils.strip(str);
+        if (StringUtils.startsWith(str, "{")) {
+            entries = StringUtils.split(StringUtils.strip(str, "{}"), ',');
+            for (String entry : entries) {
+                String[] pair = StringUtils.stripAll(StringUtils.split(StringUtils.strip(entry), ':'));
+                keys.add(Integer.parseInt(StringUtils.strip(pair[0], "\"")));
+                values.add(Float.parseFloat(StringUtils.strip(pair[1], "\"")));
+            }
+        } else if (StringUtils.startsWith(str, "[")) {
+            entries = StringUtils.split(str, ',');
+            int i = 0;
+            for (String entry : entries) {
+                // don't care about nesting
+                entry = StringUtils.strip(entry, "[] ");
+                if (i % 2 == 0) {
+                    keys.add(Integer.parseInt(entry));
+                }
+                else {
+                    values.add(Float.parseFloat(entry));
+                }
+                i++;
+            }
+            if (keys.size() != values.size()) {
+                throw new RuntimeException("Keys and values length mismatch.");
+            }
         }
 
         return new KeysValues(ArrayUtils.toPrimitive(keys.toArray(new Integer[0])),
                               ArrayUtils.toPrimitive(values.toArray(new Float[0])));
     }
 
-    class KeysValues {
+    public class KeysValues {
         public int[] keys;
         public float[] values;
  
