@@ -7,6 +7,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 
+import java.util.Set;
+import java.util.HashSet;
+
 
 @RunWith(JUnit4.class)
 public class TestHashTable {
@@ -34,16 +37,20 @@ public class TestHashTable {
     @Test
     public void test() {
         testHashTable(new int[] {5}, new float[] {5.5f}, 8);
-        testHashTable(new int[] {1, 3}, new float[] {1.1f, 3.3f}, 20);
+        testHashTable(new int[] {1, 3}, new float[] {1.1f, 3.3f}, 36);
         testHashTable(new int[] {1, 3, 2}, new float[] {1.1f, 3.3f, 2.2f}, 36);
         testHashTable(new int[] {1, 2, 3, 33}, new float[] {1.1f, 2.2f, 3.3f, 33.3f}, 68);
         testHashTable(new int[] {0, 16, 4, 20, 1}, new float[] {0.1f, 0.16f, 0.4f, 0.20f, 0.1f}, 68);
+        testHashTable(new int[] {0, 16, 4, 20, 1, 17, 33},
+                      new float[] {0.1f, 0.16f, 0.4f, 0.20f, 0.1f, 0.17f, 0.33f}, 132);
+        testHashTable(new int[] {0, 16, 4, 20, 1, 17, 33, 65},
+                      new float[] {0.1f, 0.16f, 0.4f, 0.20f, 0.1f, 0.17f, 0.33f, 0.65f}, 132);
     }
 
-    @Test
+    // @Test
     public void testRandom() {
-        int N = 100;
-        int MAX_LENGTH = 1000;
+        int N = 1000;
+        int MAX_LENGTH = 10000;
         float MIN_VALUE = (float) Integer.MIN_VALUE;
         float MAX_VALUE = (float) Integer.MAX_VALUE;
 
@@ -51,8 +58,14 @@ public class TestHashTable {
             int length = 1 + (int) (Math.random() * MAX_LENGTH);
             int[] keys = new int[length];
             float[] values = new float[length];
+            Set<Integer> uniqueKeys = new HashSet<Integer>();
             for (int j = 0; j < length; j++) {
-                keys[j] = (int) (MIN_VALUE + Math.random() * (MAX_VALUE - MIN_VALUE));
+                int k = (int) (MIN_VALUE + Math.random() * (MAX_VALUE - MIN_VALUE));
+                if (uniqueKeys.contains(k)) {
+                    continue;
+                }
+                uniqueKeys.add(k);
+                keys[j] = k;
                 values[j] = (float) (MIN_VALUE + Math.random() * (MAX_VALUE - MIN_VALUE));
             }
             testHashTable(keys, values);

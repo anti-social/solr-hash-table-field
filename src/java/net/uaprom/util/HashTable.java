@@ -171,7 +171,7 @@ public class HashTable {
         int size;
         int m = count;
         int i = 0;
-        while (m > 1) {
+        while (m > 0) {
             m = m / 2;
             i++;
         }
