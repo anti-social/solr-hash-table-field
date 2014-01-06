@@ -4,12 +4,31 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 
+/**
+ * Represents compact hash table with integer keys and float values.
+ *
+ * To save memory for small hash tables there are simple format.
+ * For simple format it doesn't store mask and length of the hash table.
+ *
+ * For collision resolution it uses formula from python's dictobject.c:
+ *
+ *  j = (5*j) + 1 + perturb;
+ *  perturb >>= PERTURB_SHIFT;
+ *  use j % 2**i as the next table index;
+ *
+ * See https://github.com/python-git/python/blob/master/Objects/dictobject.c for more details
+ */
 public class HashTable {
     public byte[] bytes;
     public int offset;
     public int length;
 
+    static int MAX_SIZE = 1 << 16;
+    static int SIMPLE_FORMAT_THRESHOLD = 2;
+
     static int DUMMY = -1;
+
+    static int PERTURB_SHIFT = 5;
 
     public HashTable(int[] keys, float[] values) {
         bytes = hcreate(keys, values);
@@ -48,12 +67,15 @@ public class HashTable {
         ByteBuffer buffer;
         int len = Math.min(keys.length, values.length);
         // special case: saves 4 bytes for hash table with one pair
-        if (len == 1) {
+        if (len <= SIMPLE_FORMAT_THRESHOLD) {
             // 4 bytes - key
             // 4 bytes - value
-            buffer = ByteBuffer.allocate(8);
-            buffer.putInt(keys[0]);
-            buffer.putFloat(values[0]);
+            // ...
+            buffer = ByteBuffer.allocate(len * 8);
+            for (int i = 0; i < len; i++) {
+                buffer.putInt(keys[i]);
+                buffer.putFloat(values[i]);
+            }
         } else {
             int size = getTableSize(len);
             int mask = size - 1;
@@ -73,9 +95,11 @@ public class HashTable {
             Arrays.fill(keyTable, DUMMY);
             for (int i = 0; i < len; i++) {
                 int h = keys[i];
+                int perturb = h;
                 int j = h & mask;
                 while (keyTable[j] != DUMMY) {
-                    h = 5 * h + 1;
+                    h = 5 * h + perturb + 1;
+                    perturb >>>= PERTURB_SHIFT;
                     j = h & mask;
                 }
                 buffer.position(4 + j * 8);
@@ -106,28 +130,31 @@ public class HashTable {
         }
 
         ByteBuffer buffer = ByteBuffer.wrap(bytes, offset, length);
-        if (length == 8) {
-            if (buffer.getInt() == key) {
-                return buffer.getFloat();
-            } else {
-                return defaultValue;
+        if (length % 8 == 0) {
+            int size = length / 8;
+            for (int i = 0; i < size; i++) {
+                buffer.position(i * 8);
+                if (buffer.getInt() == key) {
+                    return buffer.getFloat();
+                }
             }
+            return defaultValue;
         }
         int len = buffer.getShort();
         int mask = buffer.getShort();
 
-        int i, h, j, k;
-        i = 0;
-        h = key;
+        int j, k;
+        int h = key;
+        int perturb = h;
         do {
             j = h & mask;
             buffer.position(4 + j * 8);
             k = buffer.getInt();
-            if (k == DUMMY || i == len) {
+            if (k == DUMMY) {
                 return defaultValue;
             }
-            h = 5 * h + 1;
-            i++;
+            h = 5 * h + perturb + 1;
+            perturb >>>= PERTURB_SHIFT;
         } while (key != k);
 
         buffer.position(4 + j * 8 + 4);
@@ -144,8 +171,8 @@ public class HashTable {
         }
 
         ByteBuffer buffer = ByteBuffer.wrap(bytes, offset, length);
-        if (length == 8) {
-            return buffer.getInt() != DUMMY ? 1 : 0;
+        if (length % 8 == 0) {
+            return length / 8;
         }
         return buffer.getShort();
     }
@@ -176,8 +203,11 @@ public class HashTable {
             i++;
         }
         size = 1 << i;
-        if (count > 2 && count > size * 3 / 4) {
+        if (count > size * 3 / 4) {
             size = size << 1;
+        }
+        if (size > MAX_SIZE) {
+            throw new RuntimeException("Maximum size of hash table: " + MAX_SIZE);
         }
         return size;
     }

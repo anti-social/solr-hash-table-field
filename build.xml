@@ -1,6 +1,6 @@
 <project name="solr-hash-table-field" basedir="." default="main">
 
-    <property name="version" value="0.2"/>
+    <property name="version" value="0.3"/>
 
     <property environment="env"/>
 

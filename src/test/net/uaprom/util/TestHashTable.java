@@ -37,7 +37,7 @@ public class TestHashTable {
     @Test
     public void test() {
         testHashTable(new int[] {5}, new float[] {5.5f}, 8);
-        testHashTable(new int[] {1, 3}, new float[] {1.1f, 3.3f}, 36);
+        testHashTable(new int[] {1, 3}, new float[] {1.1f, 3.3f}, 16);
         testHashTable(new int[] {1, 3, 2}, new float[] {1.1f, 3.3f, 2.2f}, 36);
         testHashTable(new int[] {1, 2, 3, 33}, new float[] {1.1f, 2.2f, 3.3f, 33.3f}, 68);
         testHashTable(new int[] {0, 16, 4, 20, 1}, new float[] {0.1f, 0.16f, 0.4f, 0.20f, 0.1f}, 68);
