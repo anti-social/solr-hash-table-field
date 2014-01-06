@@ -41,19 +41,39 @@ public class TestHashTable {
     }
 
     @Test
+    public void testRandom() {
+        int N = 100;
+        int MAX_LENGTH = 1000;
+        float MIN_VALUE = (float) Integer.MIN_VALUE;
+        float MAX_VALUE = (float) Integer.MAX_VALUE;
+
+        for (int i = 0; i < N; i++) {
+            int length = 1 + (int) (Math.random() * MAX_LENGTH);
+            int[] keys = new int[length];
+            float[] values = new float[length];
+            for (int j = 0; j < length; j++) {
+                keys[j] = (int) (MIN_VALUE + Math.random() * (MAX_VALUE - MIN_VALUE));
+                values[j] = (float) (MIN_VALUE + Math.random() * (MAX_VALUE - MIN_VALUE));
+            }
+            testHashTable(keys, values);
+        }
+    }
+
+    @Test
     public void benchmark() {
         HashTable t = new HashTable(new int[] {1, 2, 3, 33},
                                     new float[] {1.1f, 2.2f, 3.3f, 33.3f});
         byte[] data = t.bytes;
         final int N = 1000000;
+        final int WARMUP_N = N * 10;
         float[] res = new float[N];
         int i;
 
         // warmup
-        for (i = 0; i < N; i++) {
+        for (i = 0; i < WARMUP_N; i++) {
             t = new HashTable(data);
-            res[i] = t.get(1);
-            res[i] = HashTable.hget(data, 1);
+            res[i % N] = t.get(1);
+            res[i % N] = HashTable.hget(data, 1);
         }
 
         long startTime, endTime;
