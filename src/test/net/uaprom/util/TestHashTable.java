@@ -47,7 +47,7 @@ public class TestHashTable {
                       new float[] {0.1f, 0.16f, 0.4f, 0.20f, 0.1f, 0.17f, 0.33f, 0.65f}, 132);
     }
 
-    // @Test
+    @Test
     public void testRandom() {
         int N = 1000;
         int MAX_LENGTH = 10000;
