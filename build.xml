@@ -102,7 +102,7 @@
     </target>
 
     <target name="test" depends="compile-test">
-        <junit haltonfailure="no" haltonerror="no">
+        <junit haltonfailure="no" haltonerror="no" showoutput="no">
             <classpath>
                 <pathelement path="${test.classes.dir}"/>
                 <path refid="test.classpath"/>
