@@ -10,7 +10,6 @@ public class HashTable {
     public int length;
 
     static int DUMMY = -1;
-    static int PROBE = 5;
 
     public HashTable(int[] keys, float[] values) {
         bytes = hcreate(keys, values);
@@ -73,14 +72,16 @@ public class HashTable {
             int[] keyTable = new int[size];
             Arrays.fill(keyTable, DUMMY);
             for (int i = 0; i < len; i++) {
-                int h = keys[i] & mask;
-                while (keyTable[h] != DUMMY) {
-                    h = (h + PROBE) & mask;
+                int h = keys[i];
+                int j = h & mask;
+                while (keyTable[j] != DUMMY) {
+                    h = 5 * h + 1;
+                    j = h & mask;
                 }
-                buffer.position(4 + h * 8);
+                buffer.position(4 + j * 8);
                 buffer.putInt(keys[i]);
                 buffer.putFloat(values[i]);
-                keyTable[h] = keys[i];
+                keyTable[j] = keys[i];
             }
         }
 
@@ -117,15 +118,15 @@ public class HashTable {
 
         int i, h, j, k;
         i = 0;
-        h = key & mask;
+        h = key;
         do {
-            j = h;
+            j = h & mask;
             buffer.position(4 + j * 8);
             k = buffer.getInt();
             if (k == DUMMY || i == len) {
                 return defaultValue;
             }
-            h = (j + PROBE) & mask;
+            h = 5 * h + 1;
             i++;
         } while (key != k);
 
