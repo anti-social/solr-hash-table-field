@@ -12,6 +12,8 @@ import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.SchemaField;
 import org.apache.solr.response.TextResponseWriter;
 import org.apache.solr.common.SolrException;
+import org.apache.solr.common.params.SolrParams;
+import org.apache.solr.common.params.MapSolrParams;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -29,6 +31,18 @@ import java.util.ArrayList;
 
 public class HashTableField extends FieldType {
     private static Logger log = LoggerFactory.getLogger(HashTableField.class);
+
+    protected int simpleFormatThreshold;
+
+    public static final String SIMPLE_FORMAT_THRESHOLD = "simpleFormatThreshold";
+    
+    @Override
+    protected void init(IndexSchema schema, Map<String, String> args) {
+        SolrParams p = new MapSolrParams(args);
+        simpleFormatThreshold = p.getInt(SIMPLE_FORMAT_THRESHOLD, HashTable.DEFAULT_SIMPLE_FORMAT_THRESHOLD);
+        args.remove(SIMPLE_FORMAT_THRESHOLD);
+        super.init(schema, args);
+    }
 
     @Override
     public void write(TextResponseWriter writer, String name, IndexableField f) throws IOException {
@@ -67,7 +81,7 @@ public class HashTableField extends FieldType {
         } catch (RuntimeException e) {
             throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, e.getMessage());
         }
-        BytesRef ref = new BytesRef(HashTable.hcreate(kv.keys, kv.values));
+        BytesRef ref = new BytesRef(HashTable.hcreate(kv.keys, kv.values, simpleFormatThreshold));
         indexFields.add(new BinaryDocValuesField(field.getName(), ref));
 
         if (field.stored()) {

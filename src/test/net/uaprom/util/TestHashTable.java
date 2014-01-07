@@ -20,7 +20,11 @@ public class TestHashTable {
     }
 
     private void testHashTable(int[] keys, float[] values, int expectedSize) {
-        HashTable t = new HashTable(keys, values);
+        testHashTable(keys, values, HashTable.DEFAULT_SIMPLE_FORMAT_THRESHOLD, expectedSize);
+    }
+
+    private void testHashTable(int[] keys, float[] values, int simpleFormatThreshold, int expectedSize) {
+        HashTable t = new HashTable(keys, values, simpleFormatThreshold);
         if (expectedSize != -1) {
             assertEquals(expectedSize, t.bytes.length);
         }
@@ -41,6 +45,7 @@ public class TestHashTable {
         testHashTable(new int[] {1, 3, 2}, new float[] {1.1f, 3.3f, 2.2f}, 36);
         testHashTable(new int[] {-1, 3, 7}, new float[] {1.1f, 3.3f, 7.7f}, 36);
         testHashTable(new int[] {1, 2, 3, 33}, new float[] {1.1f, 2.2f, 3.3f, 33.3f}, 68);
+        testHashTable(new int[] {1, 2, 3, 33}, new float[] {1.1f, 2.2f, 3.3f, 33.3f}, 4, 32);
         testHashTable(new int[] {0, 16, 4, 20, 1}, new float[] {0.1f, 0.16f, 0.4f, 0.20f, 0.1f}, 68);
         testHashTable(new int[] {0, 16, 4, 20, 1, 17, 33},
                       new float[] {0.1f, 0.16f, 0.4f, 0.20f, 0.1f, 0.17f, 0.33f}, 132);

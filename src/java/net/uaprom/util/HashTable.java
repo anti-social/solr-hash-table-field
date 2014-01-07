@@ -25,15 +25,21 @@ public class HashTable {
     public int offset;
     public int length;
 
-    static int MAX_SIZE = 1 << 16;
-    static int SIMPLE_FORMAT_THRESHOLD = 2;
+    public static final int MAX_SIZE = 1 << 16;
+    public static final int DEFAULT_SIMPLE_FORMAT_THRESHOLD = 2;
 
-    static int DUMMY = Integer.MIN_VALUE;
+    public static final int DUMMY = Integer.MIN_VALUE;
 
-    static int PERTURB_SHIFT = 5;
+    public static final int PERTURB_SHIFT = 5;
 
     public HashTable(int[] keys, float[] values) {
-        bytes = hcreate(keys, values);
+        bytes = hcreate(keys, values, DEFAULT_SIMPLE_FORMAT_THRESHOLD);
+        offset = 0;
+        length = bytes.length;
+    }
+
+    public HashTable(int[] keys, float[] values, int simpleFormatThreshold) {
+        bytes = hcreate(keys, values, simpleFormatThreshold);
         offset = 0;
         length = bytes.length;
     }
@@ -66,10 +72,14 @@ public class HashTable {
 
     // static methods to use without creating HashTable object
     public static byte[] hcreate(int[] keys, float[] values) {
+        return hcreate(keys, values, DEFAULT_SIMPLE_FORMAT_THRESHOLD);
+    }
+
+    public static byte[] hcreate(int[] keys, float[] values, int simpleFormatThreshold) {
         ByteBuffer buffer;
         int len = Math.min(keys.length, values.length);
         // special case: saves 4 bytes for hash table with one pair
-        if (len <= SIMPLE_FORMAT_THRESHOLD) {
+        if (len <= simpleFormatThreshold) {
             // 4 bytes - key
             // 4 bytes - value
             // ...
