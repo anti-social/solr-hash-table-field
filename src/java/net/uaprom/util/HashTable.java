@@ -167,20 +167,20 @@ public class HashTable {
         int h = key;
         int perturb = h;
         int i = 0;
-        do {
+        while (true) {
             j = h & mask;
             buffer.position(4 + j * 8);
             k = buffer.getInt();
+            if (k == key) {
+                return buffer.getFloat();
+            }
             if (k == DUMMY || i > maxIterations) {
                 return defaultValue;
             }
             h = 5 * h + perturb + 1;
             perturb >>>= PERTURB_SHIFT;
             i++;
-        } while (key != k);
-
-        buffer.position(4 + j * 8 + 4);
-        return buffer.getFloat();
+        }
     }
 
     public static int hlen(byte[] bytes) {
