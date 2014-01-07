@@ -7,8 +7,10 @@ import java.util.Arrays;
 /**
  * Represents compact hash table with integer keys and float values.
  *
+ * Note: -(1 << 31) or -2147483648 is special dummy key, you cannot use it as valid key
+ *
  * To save memory for small hash tables there are simple format.
- * For simple format it doesn't store mask and length of the hash table.
+ * For simple format HashTable doesn't store mask and length of the hash table.
  *
  * For collision resolution it uses formula from python's dictobject.c:
  *
@@ -26,7 +28,7 @@ public class HashTable {
     static int MAX_SIZE = 1 << 16;
     static int SIMPLE_FORMAT_THRESHOLD = 2;
 
-    static int DUMMY = -1;
+    static int DUMMY = Integer.MIN_VALUE;
 
     static int PERTURB_SHIFT = 5;
 
@@ -73,6 +75,9 @@ public class HashTable {
             // ...
             buffer = ByteBuffer.allocate(len * 8);
             for (int i = 0; i < len; i++) {
+                if (keys[i] == DUMMY) {
+                    throw new IllegalArgumentException(DUMMY + " is special dummy key");
+                }
                 buffer.putInt(keys[i]);
                 buffer.putFloat(values[i]);
             }
@@ -95,6 +100,9 @@ public class HashTable {
             Arrays.fill(keyTable, DUMMY);
             for (int i = 0; i < len; i++) {
                 int h = keys[i];
+                if (h == DUMMY) {
+                    throw new IllegalArgumentException(DUMMY + " is special dummy key");
+                }
                 int perturb = h;
                 int j = h & mask;
                 while (keyTable[j] != DUMMY) {
