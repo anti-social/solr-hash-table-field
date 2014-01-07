@@ -160,19 +160,23 @@ public class HashTable {
         }
         int len = buffer.getShort();
         int mask = buffer.getShort();
+        int size = mask + 1;
+        int maxIterations = size + 32 / PERTURB_SHIFT + 1;
 
         int j, k;
         int h = key;
         int perturb = h;
+        int i = 0;
         do {
             j = h & mask;
             buffer.position(4 + j * 8);
             k = buffer.getInt();
-            if (k == DUMMY) {
+            if (k == DUMMY || i > maxIterations) {
                 return defaultValue;
             }
             h = 5 * h + perturb + 1;
             perturb >>>= PERTURB_SHIFT;
+            i++;
         } while (key != k);
 
         buffer.position(4 + j * 8 + 4);
