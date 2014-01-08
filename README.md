@@ -3,6 +3,36 @@ HashTableField for Solr
 
 Solr field to store hash table with integer keys and float values
 
+Build instructions:
+-------------------
+
+```sh
+  cd ~/workspace
+  git clone https://github.com/apache/lucene-solr.git
+  cd lucene-solr
+  git checkout lucene_solr_4_6
+  ant ivy-bootstrap
+  cd solr
+  ant dist
+  
+  cd ../../
+  git clone git@github.com:anti-social/solr-hash-table-field.git
+  cd solr-hash-table-field
+  ant dist
+```
+
+If you has different path for Solr sources you should specify it:
+
+```sh
+  ant -Dsolr.proj.dir=/opt/workspace/solr-4.6.0 dist
+  # or
+  env SOLR_PROJ=/opt/workspace/solr-4.6.0 ant dist
+```
+
+Usage:
+------
+
+Put `solr-hash-table-field-0.4.jar` (version can differ) into `lib` directory of your solr collection.
 
 Add in solrconfig.xml:
 
