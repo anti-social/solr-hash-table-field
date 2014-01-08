@@ -14,7 +14,7 @@ Add in solrconfig.xml:
 
 schema.xml:
 ```xml
-  <field name="tag_ranks" type="htable" docValues="true" stored="true"/>
+  <field name="tag_ranks" type="htable" stored="true"/>
 
   <fieldType name="htable" class="net.uaprom.solr.schema.HashTableField"/>
 ```
