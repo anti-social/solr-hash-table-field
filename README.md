@@ -32,7 +32,7 @@ If you has different path for Solr sources you should specify it:
 Usage:
 ------
 
-Put `solr-hash-table-field-0.4.jar` (version can differ) into `lib` directory of your solr collection.
+Copy `dist/solr-hash-table-field-0.4.jar` (version can differ) into `lib` directory of your solr collection.
 
 Add in solrconfig.xml:
 
