@@ -52,6 +52,7 @@ schema.xml:
 Use in requests:
 
 ```
+  fq={!frange l=2.2}hget(tag_ranks,1234)
   fq={!frange l=1}hlen(tag_ranks)
   sort=hlen(tag_ranks) desc
   boost=hget(tag_ranks,123456,1.0)
